@@ -20,6 +20,8 @@ export function storeById(id: string): Store {
   return STORES.find((s) => s.id === id) ?? STORES[0];
 }
 
+export const UNITS: string[] = ["حبة", "كيلو", "جرام", "علبة", "لتر", "ربطة", "كيس"];
+
 export type Category = {
   id: string;
   name: string;
@@ -154,3 +156,8 @@ export const CATEGORIES: Category[] = [
     items: [],
   },
 ];
+
+export function emojiForItem(name: string): string {
+  const category = CATEGORIES.find((c) => c.items.includes(name));
+  return category?.emoji ?? "🛒";
+}
