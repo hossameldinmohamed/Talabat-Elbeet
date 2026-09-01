@@ -27,3 +27,12 @@ model Item {
   addedBy     User     @relation(fields: [addedById], references: [id], onDelete: Cascade)
   addedById   String
 }
+
+model CustomItem {
+  id         String   @id @default(cuid())
+  name       String
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  @@unique([categoryId, name])
+}

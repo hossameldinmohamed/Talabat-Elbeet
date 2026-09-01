@@ -2,18 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORIES, STORES, UNITS, Category } from "@/lib/data";
+import { CATEGORIES, STORES, UNITS, DEFAULT_UNIT, Category } from "@/lib/data";
 
 type Step = "category" | "items" | "details";
+type CustomItem = { name: string; categoryId: string };
 
-export default function AddItemFlow() {
+export default function AddItemFlow({
+  initialCustomItems = [],
+}: {
+  initialCustomItems?: CustomItem[];
+}) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("category");
   const [category, setCategory] = useState<Category | null>(null);
   const [itemName, setItemName] = useState("");
   const [customName, setCustomName] = useState("");
+  const [customItems, setCustomItems] = useState<CustomItem[]>(initialCustomItems);
   const [count, setCount] = useState(1);
-  const [unit, setUnit] = useState<string>(UNITS[0]);
+  const [unit, setUnit] = useState<string>(DEFAULT_UNIT);
   const [customUnit, setCustomUnit] = useState("");
   const [store, setStore] = useState("ANY");
   const [note, setNote] = useState("");
@@ -25,14 +31,29 @@ export default function AddItemFlow() {
     else router.push("/");
   }
 
-  function pickItem(name: string) {
-    setItemName(name);
+  function pickItem(name: string, isCustom = false) {
+    const trimmed = name.trim();
+    setItemName(trimmed);
     setCount(1);
-    setUnit(UNITS[0]);
+    setUnit(DEFAULT_UNIT);
     setCustomUnit("");
     setStore("ANY");
     setNote("");
     setStep("details");
+
+    if (isCustom && category) {
+      const categoryId = category.id;
+      setCustomItems((prev) =>
+        prev.some((c) => c.categoryId === categoryId && c.name === trimmed)
+          ? prev
+          : [...prev, { name: trimmed, categoryId }]
+      );
+      fetch("/api/custom-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed, categoryId }),
+      }).catch(() => {});
+    }
   }
 
   async function submit() {
@@ -52,6 +73,16 @@ export default function AddItemFlow() {
     router.push("/");
     router.refresh();
   }
+
+  const categoryItemNames = category
+    ? [
+        ...category.items,
+        ...customItems
+          .filter((c) => c.categoryId === category.id)
+          .map((c) => c.name)
+          .filter((name) => !category.items.includes(name)),
+      ]
+    : [];
 
   return (
     <main className="min-h-screen pb-10">
@@ -95,7 +126,7 @@ export default function AddItemFlow() {
         {step === "items" && category && (
           <div>
             <div className="flex flex-wrap gap-2 mb-6">
-              {category.items.map((name) => (
+              {categoryItemNames.map((name) => (
                 <button
                   key={name}
                   onClick={() => pickItem(name)}
@@ -107,7 +138,9 @@ export default function AddItemFlow() {
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm p-4">
-              <p className="text-sm font-semibold text-gray-600 mb-2">مش لاقي الصنف؟ ضيفه هنا</p>
+              <p className="text-sm font-semibold text-gray-600 mb-2">
+                مش لاقي الصنف؟ ضيفه هنا وهيفضل محفوظ في القسم ده من بعد كده
+              </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   value={customName}
@@ -117,7 +150,10 @@ export default function AddItemFlow() {
                 />
                 <button
                   disabled={!customName.trim()}
-                  onClick={() => pickItem(customName)}
+                  onClick={() => {
+                    pickItem(customName, true);
+                    setCustomName("");
+                  }}
                   className="bg-brand-600 disabled:opacity-40 text-white font-bold px-5 py-3 sm:py-0 rounded-xl"
                 >
                   إضافة
