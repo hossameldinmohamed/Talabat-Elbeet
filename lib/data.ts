@@ -20,7 +20,8 @@ export function storeById(id: string): Store {
   return STORES.find((s) => s.id === id) ?? STORES[0];
 }
 
-export const UNITS: string[] = ["حبة", "كيلو", "جرام", "علبة", "لتر", "ربطة", "كيس"];
+export const UNITS: string[] = ["كيلو", "حبة", "جرام", "علبة", "لتر", "ربطة", "كيس"];
+export const DEFAULT_UNIT = "كيلو";
 
 export type Category = {
   id: string;
