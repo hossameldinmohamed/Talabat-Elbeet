@@ -13,7 +13,7 @@ export const STORES: Store[] = [
   { id: "EDEKA", name: "Edeka", color: "#1a6d3c" },
   { id: "ALDI", name: "Aldi", color: "#00447c" },
   { id: "PENNY", name: "Penny", color: "#e2001a" },
-  { id: "OTHER", name: "تاني", color: "#4b5563" },
+  { id: "OTHER", name: "محل عربي", color: "#4b5563" },
 ];
 
 export function storeById(id: string): Store {
