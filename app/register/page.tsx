@@ -7,7 +7,6 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
@@ -22,7 +21,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, inviteCode }),
+      body: JSON.stringify({ email, password, inviteCode }),
     });
     const data = await res.json();
 
@@ -54,17 +53,6 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">الاسم</label>
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              placeholder="اسمك"
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               البريد الإلكتروني
