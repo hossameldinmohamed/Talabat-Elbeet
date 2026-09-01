@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORIES, STORES, Category } from "@/lib/data";
+import { CATEGORIES, STORES, UNITS, Category } from "@/lib/data";
 
 type Step = "category" | "items" | "details";
 
@@ -12,7 +12,9 @@ export default function AddItemFlow() {
   const [category, setCategory] = useState<Category | null>(null);
   const [itemName, setItemName] = useState("");
   const [customName, setCustomName] = useState("");
-  const [quantity, setQuantity] = useState("1");
+  const [count, setCount] = useState(1);
+  const [unit, setUnit] = useState<string>(UNITS[0]);
+  const [customUnit, setCustomUnit] = useState("");
   const [store, setStore] = useState("ANY");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +27,9 @@ export default function AddItemFlow() {
 
   function pickItem(name: string) {
     setItemName(name);
-    setQuantity("1");
+    setCount(1);
+    setUnit(UNITS[0]);
+    setCustomUnit("");
     setStore("ANY");
     setNote("");
     setStep("details");
@@ -34,10 +38,16 @@ export default function AddItemFlow() {
   async function submit() {
     if (!itemName.trim() || submitting) return;
     setSubmitting(true);
+    const finalUnit = unit === "أخرى" ? customUnit.trim() || "أخرى" : unit;
     await fetch("/api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: itemName.trim(), quantity, store, note }),
+      body: JSON.stringify({
+        name: itemName.trim(),
+        quantity: `${count} ${finalUnit}`,
+        store,
+        note,
+      }),
     });
     router.push("/");
     router.refresh();
@@ -46,15 +56,15 @@ export default function AddItemFlow() {
   return (
     <main className="min-h-screen pb-10">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
+        <div className="max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={goBack}
-            className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600"
+            className="w-9 h-9 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-gray-600"
             aria-label="رجوع"
           >
-            ←
+            →
           </button>
-          <h1 className="text-lg font-bold text-brand-700">
+          <h1 className="text-lg font-bold text-brand-700 truncate">
             {step === "category" && "اختار القسم"}
             {step === "items" && (category?.name ?? "اختار الصنف")}
             {step === "details" && itemName}
@@ -62,9 +72,9 @@ export default function AddItemFlow() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 pt-4">
+      <div className="max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 pt-4">
         {step === "category" && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {CATEGORIES.map((c) => (
               <button
                 key={c.id}
@@ -98,7 +108,7 @@ export default function AddItemFlow() {
 
             <div className="bg-white rounded-2xl shadow-sm p-4">
               <p className="text-sm font-semibold text-gray-600 mb-2">مش لاقي الصنف؟ ضيفه هنا</p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
@@ -108,7 +118,7 @@ export default function AddItemFlow() {
                 <button
                   disabled={!customName.trim()}
                   onClick={() => pickItem(customName)}
-                  className="bg-brand-600 disabled:opacity-40 text-white font-bold px-5 rounded-xl"
+                  className="bg-brand-600 disabled:opacity-40 text-white font-bold px-5 py-3 sm:py-0 rounded-xl"
                 >
                   إضافة
                 </button>
@@ -121,12 +131,60 @@ export default function AddItemFlow() {
           <div className="bg-white rounded-2xl shadow-sm p-5 space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">الكمية</label>
-              <input
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="مثال: 2 كيلو، علبة، 3"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCount((c) => Math.max(1, c - 1))}
+                    className="w-11 h-11 shrink-0 rounded-xl bg-gray-100 text-gray-700 text-2xl font-bold flex items-center justify-center active:scale-95 transition"
+                    aria-label="تقليل الكمية"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    value={count}
+                    onChange={(e) => setCount(Math.max(1, Number(e.target.value) || 1))}
+                    className="w-20 text-center rounded-xl border border-gray-300 py-2.5 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCount((c) => c + 1)}
+                    className="w-11 h-11 shrink-0 rounded-xl bg-brand-100 text-brand-700 text-2xl font-bold flex items-center justify-center active:scale-95 transition"
+                    aria-label="زيادة الكمية"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {[...UNITS, "أخرى"].map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => setUnit(u)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition ${
+                        unit === u
+                          ? "bg-brand-600 text-white border-brand-600"
+                          : "bg-white text-gray-600 border-gray-300"
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {unit === "أخرى" && (
+                <input
+                  value={customUnit}
+                  onChange={(e) => setCustomUnit(e.target.value)}
+                  placeholder="اكتب الوحدة"
+                  className="w-full mt-3 rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+              )}
             </div>
 
             <div>

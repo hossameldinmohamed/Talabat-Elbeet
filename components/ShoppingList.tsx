@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { STORES, storeById } from "@/lib/data";
+import { STORES, storeById, emojiForItem } from "@/lib/data";
 
 export type Item = {
   id: string;
@@ -64,7 +64,7 @@ export default function ShoppingList({
   return (
     <main className="min-h-screen pb-28">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-brand-700">🛒 طلبات البيت</h1>
             <p className="text-xs text-gray-500">أهلاً {userName}</p>
@@ -77,7 +77,7 @@ export default function ShoppingList({
           </button>
         </div>
 
-        <div className="max-w-lg mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
+        <div className="max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
           <button
             onClick={() => setFilter("ALL")}
             className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition ${
@@ -92,12 +92,14 @@ export default function ShoppingList({
             <button
               key={s.id}
               onClick={() => setFilter(s.id)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition ${
-                filter === s.id
-                  ? "text-white border-transparent"
-                  : "bg-white text-gray-600 border-gray-300"
+              className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border-2 transition ${
+                filter === s.id ? "text-white border-transparent" : "bg-white"
               }`}
-              style={filter === s.id ? { backgroundColor: s.color } : undefined}
+              style={
+                filter === s.id
+                  ? { backgroundColor: s.color }
+                  : { borderColor: s.color, color: s.color }
+              }
             >
               {s.name} ({items.filter((i) => i.store === s.id).length})
             </button>
@@ -105,7 +107,7 @@ export default function ShoppingList({
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 pt-4">
+      <div className="max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 pt-4">
         {visibleItems.length === 0 ? (
           <div className="text-center text-gray-400 mt-24">
             <div className="text-5xl mb-3">📝</div>
@@ -119,32 +121,35 @@ export default function ShoppingList({
               return (
                 <li
                   key={item.id}
-                  className="bg-white rounded-2xl shadow-sm px-4 py-3 flex items-center gap-3"
+                  className="bg-white rounded-2xl shadow-sm p-3 flex items-center gap-3"
                 >
-                  <button
-                    onClick={() => handleBought(item.id)}
-                    aria-label="تم الشراء"
-                    className="w-8 h-8 shrink-0 rounded-full border-2 border-brand-500 flex items-center justify-center text-brand-600 hover:bg-brand-50 active:scale-95 transition"
-                  >
-                    ✓
-                  </button>
+                  <div className="w-12 h-12 shrink-0 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl">
+                    {emojiForItem(item.name)}
+                  </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-baseline gap-2">
                       <span className="font-semibold text-gray-800 truncate">{item.name}</span>
-                      <span className="text-sm text-gray-500 shrink-0">× {item.quantity}</span>
+                      <span className="text-sm text-gray-500 shrink-0">{item.quantity}</span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-1">
                       <span
-                        className="text-xs px-2 py-0.5 rounded-full text-white"
-                        style={{ backgroundColor: store.color }}
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: `${store.color}1f`, color: store.color }}
                       >
                         {store.name}
                       </span>
-                      <span className="text-xs text-gray-400">أضافها {item.addedByName}</span>
                     </div>
                     {item.note && <p className="text-xs text-gray-500 mt-1">{item.note}</p>}
                   </div>
+
+                  <button
+                    onClick={() => handleBought(item.id)}
+                    aria-label="تم الشراء"
+                    className="w-10 h-10 shrink-0 rounded-full border-2 border-brand-500 flex items-center justify-center text-brand-600 text-lg hover:bg-brand-50 active:scale-95 transition"
+                  >
+                    ✓
+                  </button>
                 </li>
               );
             })}
