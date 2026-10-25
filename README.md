@@ -3,7 +3,7 @@
 # 🛒 Talabat Elbeet — طلبات البيت
 
 **One shared grocery list for the whole household.**
-Everyone adds items from their own phone, everyone sees the same list — and when you buy something, tap ✓ and it's gone for everyone.
+Everyone adds items from their own phone; everyone sees the same list. When you buy something, tap ✓ and it's gone for everyone.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
